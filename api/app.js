@@ -1,0 +1,44 @@
+const path = require('path');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const { log, ExpressAPILogMiddleware } = require('@rama41222/node-logger');
+const db = require('./db');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swaggerConfig');
+
+process.env.TZ = 'Asia/Taipei';
+
+const config = {
+  name: 'homegraph-api',
+  port: 3000,
+  host: '0.0.0.0',
+};
+
+const app = express();
+const logger = log({ console: true, file: false, label: config.name });
+
+app.use(bodyParser.json());
+app.use(cors());
+app.use(ExpressAPILogMiddleware(logger, { request: true }));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+
+// 靜態資源的路徑
+app.use('/appdata', express.static(path.join(__dirname, 'appdata')));
+
+app.get('/', (req, res) => {
+  res.status(200).send('Homegraph.');
+});
+
+// 裝置數值
+const deviceReading = require('./routers/deviceReading/deviceReading');
+app.use('/deviceReading', deviceReading);
+
+
+app.listen(config.port, config.host, (e)=> {
+  if(e) {
+    throw new Error('Internal Server Error');
+  }
+  logger.info(`${config.name} running on ${config.host}:${config.port}`);
+});
