@@ -1,8 +1,6 @@
 # Homegraph
 Home iot system in node.
-
-RestAPI：
-- Node.js
+- Node.js(22.17+)
 - MariaDB
 
 ## Setup Database
@@ -37,8 +35,23 @@ dev
 cd api
 pnpm dev
 ```
+Url
+```
+http://192.168.0.xxx:3000/api
+```
 
 Swagger API Docs
 ```
 http://192.168.0.xxx:3000/api-docs
+```
+
+## Dashboard
+dev
+```
+cd api
+pnpm dev --host
+```
+Url
+```
+http://192.168.0.xxx:5173/
 ```
