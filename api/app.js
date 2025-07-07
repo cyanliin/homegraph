@@ -31,9 +31,14 @@ app.get('/', (req, res) => {
   res.status(200).send('Homegraph.');
 });
 
+// 裝置
+const device = require('./routers/device');
+app.use('/device', device);
+
+
 // 裝置數值
-const deviceReading = require('./routers/deviceReading/deviceReading');
-app.use('/deviceReading', deviceReading);
+// const deviceReading = require('./routers/deviceReading/deviceReading');
+// app.use('/deviceReading', deviceReading);
 
 
 app.listen(config.port, config.host, (e)=> {
