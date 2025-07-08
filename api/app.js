@@ -27,6 +27,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // 靜態資源的路徑
 app.use('/appdata', express.static(path.join(__dirname, 'appdata')));
 
+// 首頁
 app.get('/', (req, res) => {
   res.status(200).send('Homegraph.');
 });
@@ -37,8 +38,8 @@ app.use('/device', device);
 
 
 // 裝置數值
-// const deviceReading = require('./routers/deviceReading/deviceReading');
-// app.use('/deviceReading', deviceReading);
+const reading = require('./routers/reading');
+app.use('/reading', reading);
 
 
 app.listen(config.port, config.host, (e)=> {
