@@ -30,6 +30,10 @@ pnpm install
 cd api
 pm2 start "pnpm start" --name homegraph-api
 
+# 啟動 監控面板 程式（可選擇部署在別台）
+cd ../app
+pm2 start "pnpm run dev" --name homegraph-app
+
 # 儲存目前的 PM2 狀態（讓它記得有哪些程式要開機啟動)
 pm2 save
 
@@ -54,12 +58,15 @@ pm2 list
 
 # 查看 Log
 pm2 logs homegraph-api
+pm2 logs homegraph-app
 
 # 停止正在執行的專案
 pm2 stop homegraph-api
+pm2 logs homegraph-app
 
 # 從 PM2 中刪除這個專案（完全移除，不再自動啟動）
 pm2 delete homegraph-api
+pm2 delete homegraph-app
 
 # 取消開機自動啟動（整個 PM2）
 pm2 unstartup
