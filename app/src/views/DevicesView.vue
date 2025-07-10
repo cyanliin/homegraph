@@ -9,7 +9,8 @@ const status = ref('');
 
 async function onRefresh() {
   status.value = 'loading...';
-  const { isFetching, error, data } = await useFetch('http://192.168.0.246:3000/device/getList').json();
+  const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/device/getList`;
+  const { isFetching, error, data } = await useFetch(apiUrl).json();
 
   if (error.value) {
     status.value = 'Error fetching device list.'

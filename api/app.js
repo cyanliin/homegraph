@@ -1,5 +1,6 @@
 const path = require('path');
 const express = require('express');
+require('dotenv').config(); // 載入 .env 檔案
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const { log, ExpressAPILogMiddleware } = require('@rama41222/node-logger');
@@ -11,8 +12,8 @@ process.env.TZ = 'Asia/Taipei';
 
 const config = {
   name: 'homegraph-api',
-  port: 3000,
-  host: '0.0.0.0',
+  port: process.env.API_PORT || 3000,
+  host: process.env.API_HOST || '0.0.0.0',
 };
 
 const app = express();
