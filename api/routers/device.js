@@ -26,7 +26,7 @@
 
 const express = require("express");
 const router = express.Router();
-const db = require("../db");
+const deviceService = require("../services/deviceService");
 
 
 /**
@@ -52,22 +52,13 @@ const db = require("../db");
 router.get(
   "/getList",
   async (req, res) => {
-    // res.status(200).json({ 'data': 'hi' });
-    let conn;
     try {
-      
-      // 取得資料
-      conn = await db.getConnection();
-      const query = `SELECT * FROM devices`;
-      const rows = await conn.query(query);
-
-      // 回傳結果
-      res.status(200).send(rows);
+      const devices = await deviceService.getAllDevices();
+      res.status(200).json(devices);
     } catch (err) {
-      res.status(500).send(err);
-      // throw err;
-    } finally {
-      if (conn) return conn.release();
+      // 紀錄詳細錯誤，但只回傳通用的錯誤訊息
+      console.error(err);
+      res.status(500).json({ message: "Internal Server Error" });
     }
   }
 )

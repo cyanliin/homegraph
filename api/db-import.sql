@@ -50,8 +50,8 @@ DROP TABLE IF EXISTS `readings`;
 
 CREATE TABLE `readings` (
   `reading_id` int(11) NOT NULL AUTO_INCREMENT,
-  `device_id` int(11) DEFAULT NULL,
-  `sensor_id` int(11) DEFAULT NULL,
+  `device_id` int(11) unsigned DEFAULT NULL,
+  `sensor_id` int(11) unsigned DEFAULT NULL,
   `value` decimal(10,2) NOT NULL,
   `timestamp` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`reading_id`)
@@ -91,3 +91,15 @@ UNLOCK TABLES;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- 為 readings 表格的 device_id 欄位新增外鍵
+ALTER TABLE `readings`
+ADD CONSTRAINT `fk_readings_device`
+FOREIGN KEY (`device_id`) REFERENCES `devices` (`device_id`)
+ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- 為 readings 表格的 sensor_id 欄位新增外鍵
+ALTER TABLE `readings`
+ADD CONSTRAINT `fk_readings_sensor`
+FOREIGN KEY (`sensor_id`) REFERENCES `sensors` (`sensor_id`)
+ON DELETE SET NULL ON UPDATE CASCADE;

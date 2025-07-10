@@ -15,9 +15,9 @@
  *         device_id:
  *           type: integer
  *           description: 裝置ID
- *         sensor_rd:
+*         sensor_id:
  *           type: integer
- *           description: 感測器ID
+*           description: 感測器 ID
  *         value:
  *           type: number
  *           description: 數值
@@ -31,11 +31,11 @@
 const express = require("express");
 const validateRequiredParams = require("../middlewares/validateRequiredParams");
 const router = express.Router();
-const db = require("../db");
+const { getReadings, addReadings } = require("../services/readingService");
 
 /**
  * @swagger
- * /reading/get:
+ * /reading/get: # 路由路徑與 swagger 文件保持一致
  *   get:
  *     summary: 查詢記錄
  *     tags: [Reading]
@@ -53,33 +53,22 @@ const db = require("../db");
  *           application/json:
  *             schema:
  *               type: array
- *               items:
- *                 $ref: '#/components/schemas/readings'
+ *               items: # 回傳的是 reading 物件的陣列
+ *                 $ref: '#/components/schemas/reading'
  *       500:
  *         description: Internal Server Error
  */
 router.get(
-  "/",
+  "/get", // 將路徑從 "/" 改為 "/get"
   validateRequiredParams({query: ["count"]}),
   async (req, res) => {
-    
     const {count} = req.query;
-
-    let conn;
     try {
-      
-      // 取得資料
-      conn = await db.getConnection();
-      const query = `SELECT * FROM readings ORDER BY timestamp DESC LIMIT ${count}`;
-      const rows = await conn.query(query, [count]);
-
-      // 回傳結果
-      res.status(200).send(rows);
+      const readings = await getReadings(count);
+      res.status(200).json(readings);
     } catch (err) {
-      res.status(500).send(err);
-      // throw err;
-    } finally {
-      if (conn) return conn.release();
+      console.error(err);
+      res.status(500).json({ message: "Internal Server Error" });
     }
   }
 );
@@ -88,66 +77,67 @@ router.get(
  * @swagger
  * /reading/add:
  *   post:
- *     summary: 新增一個筆紀錄
+ *     summary: 新增一筆或多筆紀錄
  *     tags: [Reading]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *               type: object
- *               properties:
- *                 device_id:
- *                   type: integer
- *                   description: 裝置編號 
- *                 sensor_id:
- *                   type: integer
- *                   description: 感測器編號
- *                 value:
- *                   type: number
- *                   description: 數值
- *               required:
- *                 - device_id
- *                 - sensor_id
- *                 - value
+ *             type: object
+ *             properties:
+ *               device_id:
+ *                 type: integer
+ *                 description: 裝置編號
+ *                 example: 1
+ *               values:
+ *                 type: array
+ *                 description: 感測數值陣列
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     sensor_id:
+ *                       type: integer
+ *                       description: 感測器編號
+ *                       example: 1
+ *                     value:
+ *                       type: number
+ *                       description: 數值
+ *                       example: 25.5
+ *                   required:
+ *                     - sensor_id
+ *                     - value
+ *             required:
+ *               - device_id
+ *               - values
  *     responses:
  *       200:
- *         description: Successful operation
+ *         description: 操作成功，回傳已新增的紀錄
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/deviceReading'
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/reading'
+ *       400:
+ *         description: 請求格式錯誤
  *       500:
  *         description: Internal Server Error
  */
 
 router.post(
-  "/",
-  validateRequiredParams({body: ["device_id", "sensor_id", "value"]}),
+  "/add",
+  validateRequiredParams({body: ["device_id", "values"]}),
   async (req, res) => {
-
-    const { device_id, sensor_id, value } = req.body;
-
-    let conn;
     try {
-      
-      // 執行新增操作
-      conn = await db.getConnection();
-      const query = `INSERT INTO readings(device_id, sensor_id, value) VALUES(?,?,?)`;
-      const result = await conn.query(query, [device_id, sensor_id, value]);
-      conn.release();
-  
-      // 根據剛插入的 ID 查詢該筆資料
-      const insertedId = result.insertId;
-      const insertedData = await conn.query('SELECT * FROM readings WHERE reading_id = ?', [insertedId]);
-  
-      // 回傳新增的資料
-      res.status(200).json(insertedData[0]);
+      const newReadings = await addReadings(req.body);
+      res.status(200).json(newReadings);
     } catch (err) {
       console.error(err);
-      res.status(500).send(err);
-    } finally {
-      if (conn) conn.release();
+      // 如果 service 層有設定 statusCode (例如 400)，就使用它
+      const statusCode = err.statusCode || 500;
+      const message = err.statusCode ? err.message : "Internal Server Error";
+      res.status(statusCode).json({ message });
     }
   }
 )
