@@ -40,6 +40,8 @@ const addReadings = async (readingData) => {
     // 使用交易確保資料一致性
     await conn.beginTransaction();
 
+    const now = new Date(); // 由 API 伺服器產生當前時間
+
     // 準備批次插入的資料，格式為 [[device_id, sensor_id, value], ...]
     const rowsToInsert = values.map(v => {
       if (v.sensor_id === undefined || v.value === undefined) {
@@ -48,12 +50,12 @@ const addReadings = async (readingData) => {
         error.statusCode = 400;
         throw error;
       }
-      return [device_id, v.sensor_id, v.value];
+      return [device_id, v.sensor_id, v.value, now];
     });
 
     // 使用 conn.batch() 進行批次插入，這是 node-mariadb 處理此類操作的推薦方法
     // SQL 語句需要為單筆插入的格式
-    const insertQuery = `INSERT INTO readings(device_id, sensor_id, value) VALUES (?, ?, ?)`;
+    const insertQuery = `INSERT INTO readings(device_id, sensor_id, value, timestamp) VALUES (?, ?, ?, ?)`;
     await conn.batch(insertQuery, rowsToInsert);
 
     // conn.batch 的回傳結果不包含可靠的 insertId，我們需要用 SQL 函數來取得
