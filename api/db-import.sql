@@ -56,7 +56,7 @@ CREATE TABLE `readings` (
   `device_id` int(11) unsigned DEFAULT NULL,
   `sensor_id` int(11) unsigned DEFAULT NULL,
   `value` decimal(10,2) NOT NULL,
-  `timestamp` timestamp NULL DEFAULT current_timestamp(),
+  `timestamp` timestamp NOT NULL,
   PRIMARY KEY (`reading_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -80,9 +80,7 @@ INSERT INTO `sensors` (`sensor_id`, `sensor_name`)
 VALUES
 	(1,'temperature'),
 	(2,'humidity'),
-	(3,'rain'),
-	(4,'light'),
-  (5,'co2'),
+	(3,'co2'),
 
 /*!40000 ALTER TABLE `sensors` ENABLE KEYS */;
 UNLOCK TABLES;

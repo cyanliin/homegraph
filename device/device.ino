@@ -18,7 +18,7 @@ const char* API_PATH = "/reading/add";
 const int DEVICE_ID = 1;
 const int SENSOR_ID_TEMP = 1;
 const int SENSOR_ID_HUMIDITY = 2;
-const int SENSOR_ID_CO2 = 5;
+const int SENSOR_ID_CO2 = 3;
 
 // I2C Pins for ESP32-C3
 const int I2C_SDA_PIN = 8;
@@ -111,7 +111,7 @@ void sendData(float temperature, float humidity, float co2) {
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial); // 等待序列埠準備就緒
+  // while (!Serial); // 等待序列埠準備就緒
 
   // 初始化 I2C
   Serial.println("Init I2C...");
