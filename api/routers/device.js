@@ -63,4 +63,45 @@ router.get(
   }
 )
 
+/**
+ * @swagger
+ * /device/{id}:
+ *   get:
+ *     summary: 取得單一裝置資訊
+ *     tags: [Device]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: 裝置 ID
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/device'
+ *       404:
+ *         description: Device not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get(
+  "/:id",
+  async (req, res) => {
+    try {
+      const device = await deviceService.getDeviceById(req.params.id);
+      if (!device) {
+        return res.status(404).json({ message: "Device not found" });
+      }
+      res.status(200).json(device);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+);
+
 module.exports = router;

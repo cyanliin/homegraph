@@ -8,8 +8,6 @@ const db = require('./db');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swaggerConfig');
 
-process.env.TZ = 'Asia/Taipei';
-
 const config = {
   name: 'homegraph-api',
   port: process.env.API_PORT || 3000,
@@ -41,6 +39,10 @@ app.use('/device', device);
 // 裝置數值
 const reading = require('./routers/reading');
 app.use('/reading', reading);
+
+// 感測器
+const sensor = require('./routers/sensor');
+app.use('/sensor', sensor);
 
 
 app.listen(config.port, config.host, (e)=> {

@@ -86,7 +86,69 @@ const addReadings = async (readingData) => {
   }
 };
 
+/**
+ * 依裝置 ID 取得分頁的感測數值
+ * @param {object} options
+ * @param {number | string} options.deviceId 裝置 ID
+ * @param {number} [options.page=1] 當前頁碼 (從 1 開始)
+ * @param {number} [options.limit=60] 每頁筆數
+ * @param {string} [options.startDate] 開始時間 (ISO 8601)
+ * @param {string} [options.endDate] 結束時間 (ISO 8601)
+ * @param {number | string} [options.sensorId] 感測器 ID
+ * @returns {Promise<{data: Array, total: number, totalPages: number, currentPage: number}>}
+ */
+const getReadingsByDevice = async ({ deviceId, page = 1, limit = 60, startDate, endDate, sensorId }) => {
+  let conn;
+  try {
+    conn = await db.getConnection();
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 60;
+    const offset = (pageNum - 1) * limitNum;
+
+    let whereClauses = ['r.device_id = ?'];
+    let params = [deviceId];
+
+    if (startDate) {
+      whereClauses.push('r.timestamp >= ?');
+      params.push(startDate);
+    }
+    if (endDate) {
+      // Use '<' for an exclusive end date, which is more robust with full-day selections.
+      whereClauses.push('r.timestamp < ?');
+      params.push(endDate);
+    }
+    if (sensorId) {
+      whereClauses.push('r.sensor_id = ?');
+      params.push(sensorId);
+    }
+
+    const whereSql = whereClauses.join(' AND ');
+
+    // 查詢總筆數
+    const countQuery = `SELECT COUNT(*) as total FROM readings r WHERE ${whereSql}`;
+    const [countResult] = await conn.query(countQuery, params);
+    const total = Number(countResult.total);
+    const totalPages = Math.ceil(total / limitNum);
+
+    // 查詢分頁資料，並 join 感測器名稱
+    const dataQuery = `
+      SELECT r.reading_id, r.value, r.timestamp, s.sensor_name
+      FROM readings r
+      JOIN sensors s ON r.sensor_id = s.sensor_id
+      WHERE ${whereSql}
+      ORDER BY r.timestamp DESC
+      LIMIT ? OFFSET ?
+    `;
+    const data = await conn.query(dataQuery, [...params, limitNum, offset]);
+
+    return { data, total, totalPages, currentPage: pageNum };
+  } finally {
+    if (conn) conn.release();
+  }
+};
+
 module.exports = {
   getReadings,
   addReadings,
+  getReadingsByDevice,
 };

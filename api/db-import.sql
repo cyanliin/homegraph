@@ -37,7 +37,10 @@ LOCK TABLES `devices` WRITE;
 
 INSERT INTO `devices` (`device_id`, `device_name`, `location`)
 VALUES
-	(1,'Living Room',NULL);
+	(1,'Living Room',NULL),
+	(2,'Bedroom',NULL),
+	(3,'Balcony',NULL),
+;
 
 /*!40000 ALTER TABLE `devices` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -78,7 +81,8 @@ VALUES
 	(1,'temperature'),
 	(2,'humidity'),
 	(3,'rain'),
-	(4,'light');
+	(4,'light'),
+  (5,'co2'),
 
 /*!40000 ALTER TABLE `sensors` ENABLE KEYS */;
 UNLOCK TABLES;
